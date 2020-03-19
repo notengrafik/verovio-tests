@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "mochify": "^6.6.0"
+  },
+  "scripts": {
+    "test": "npm run compile-tests && npm run run-tests",
+    "compile-tests": "node lib/compile-tests.js",
+    "run-tests": "mochify lib/run-tests.js --https-server"
+  },
+  "dependencies": {
+    "fs-extra": "^8.1.0"
+  }
+}
