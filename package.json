@@ -8,6 +8,8 @@
     "run-tests": "mochify lib/run-tests.js --https-server"
   },
   "dependencies": {
-    "fs-extra": "^8.1.0"
+    "fs-extra": "^8.1.0",
+    "uuid-random": "^1.3.0",
+    "xmldom": "^0.3.0"
   }
 }
