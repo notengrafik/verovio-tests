@@ -1,0 +1,42 @@
+<score xmlns="http://www.music-encoding.org/ns/mei">
+    <annot type="verovio-options">
+        {
+            "breaks": "encoded",
+            "appXPathQuery": "./rdg[@type='break-after-section']"
+        }
+    </annot>
+    <annot type="test" label="activates rdg with added system breaks">
+        assert.equal(2, svg.querySelectorAll(".system").length);
+    </annot>
+    <scoreDef>
+        <staffGrp>
+            <staffDef clef.shape="G" clef.line="2" lines="5" n="1"/>
+        </staffGrp>
+    </scoreDef>
+    <section>
+        <pb/>
+        <measure>
+            <staff>
+                <layer>
+                    <mRest/>
+                </layer>
+            </staff>
+        </measure>
+    </section>
+    <app>
+        <lem/>
+        <rdg type="break-after-section">
+            <sb/>
+        </rdg>
+    </app>
+    <section>
+        <measure>
+            <staff>
+                <layer>
+                    <mRest/>
+                </layer>
+            </staff>
+        </measure>
+    </section>
+    <sb/>
+</score>
