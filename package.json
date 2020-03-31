@@ -5,6 +5,7 @@
     "run-tests": "mochify lib/run-tests.js --https-server"
   },
   "dependencies": {
+    "chai": "^4.2.0",
     "distance-transform": "^1.0.2",
     "fs-extra": "^8.1.0",
     "mochify": "^6.6.0",
