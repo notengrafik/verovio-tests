@@ -1,47 +1,23 @@
-<?xml version="1.0" encoding="utf8" standalone="no"?>
-<mei xmlns="http://www.music-encoding.org/ns/mei" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="m-1" meiversion="4.0.0">
-  <meiHead xml:id="m-2">
-    <fileDesc xml:id="m-3">
-      <titleStmt>
-        <title xml:id="m-10">Test: Hairpin across system break</title>
-      </titleStmt>
-      <pubStmt/>
-    </fileDesc>
-  </meiHead>
-  <music xml:id="m-23">
-    <body xml:id="m-24">
-      <mdiv xml:id="m-25">
-        <score xml:id="m-27">
-          <scoreDef xml:id="m-28" meter.count="4" meter.unit="4">
-            <staffGrp xml:id="m-29">
-              <staffDef xml:id="m-30" clef.line="2" clef.shape="G" key.sig="0" lines="5" n="1"/>
-            </staffGrp>
-          </scoreDef>
-          <section xml:id="m-33" label="">
-            <annot type="test" label="hairpin should continue across barline">
-              assert.ok(svg.querySelectorAll(".system")[1].querySelector(".hairpin"));
-            </annot>
-            <pb/>
-            <measure xml:id="m-305" n="1">
-              <staff xml:id="m-306" n="1">
-                <layer xml:id="m-307" n="1">
-                  <mRest/>
-                </layer>
-              </staff>
-              <hairpin form="cres" tstamp="1" tstamp2="1m+4" xml:id="cresc"/>
-            </measure>
-            <sb xml:id="m-341"/>
-            <measure xml:id="m-323" n="2">
-              <staff xml:id="m-324" n="1">
-                <layer xml:id="m-325" n="1">
-                  <mRest/>
-                </layer>
-              </staff>
-            </measure>
-            <sb/>
-          </section>
-        </score>
-      </mdiv>
-    </body>
-  </music>
-</mei>
+<section xmlns="http://www.music-encoding.org/ns/mei">
+  <annot type="test" label="hairpin should continue across system break">
+    assert.ok(svg.querySelectorAll(".system")[1].querySelector(".hairpin"));
+  </annot>
+  <pb/>
+  <measure n="1">
+    <staff n="1">
+      <layer n="1">
+        <mRest/>
+      </layer>
+    </staff>
+    <hairpin form="cres" tstamp="1" tstamp2="1m+4" xml:id="hairpin"/>
+  </measure>
+  <sb />
+  <measure n="2">
+    <staff n="1">
+      <layer n="1">
+        <mRest/>
+      </layer>
+    </staff>
+  </measure>
+  <sb/>
+</section>
