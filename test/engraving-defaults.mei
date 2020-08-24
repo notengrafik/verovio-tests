@@ -1,0 +1,166 @@
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="4.0.0">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title></title>
+      </titleStmt>
+      <pubStmt></pubStmt>
+      <notesStmt>
+        <annot type="verovio-options">
+          {
+            "engravingDefaults": "test/engraving-defaults-test.json"
+          }
+        </annot>
+        <annot type="test" label="respect engraving defaults">
+          <![CDATA[
+          // TODO: We do not want to extract information about unit sizes from 
+          // the rendering (for staves with less than 2 lines we can't even do 
+          // that). Implement a Verovio option that writes this info as metadata
+          // into the SVG.
+          const firstStaff = svg.querySelector(".staff");
+          const staffId = firstStaff.getAttribute("data-id");
+          const lines = svg.querySelectorAll(`[data-id="${staffId}"] > path`);
+          const unit = (lines[1].getPointAtLength(0).y - lines[0].getPointAtLength(0).y) / 2;
+          const measures = svg.querySelectorAll(".measure");
+
+
+          function slurTieWidth(pathSelector) {
+            const path = svg.querySelector(pathSelector);
+            const pathLength = path.getTotalLength();
+            // This is a rough estimation! .25 and .75 are not precisely the 
+            // points in the center of the slur/tie, but they are close enough
+            const y1 = path.getPointAtLength(.25 * pathLength).y;
+            const y2 = path.getPointAtLength(.75 * pathLength).y;
+            // Same as with barlines: getComputedStyle() won't work for some reason
+            const strokeWidth = parseFloat(path.getAttribute("stroke-width"));
+            return (Math.abs(y2 - y1) + strokeWidth) / unit;
+          }
+
+          const barlineThicknesses = new Set([]);
+          svg.querySelectorAll(".barLineAttr > path").forEach(barline => {
+            // Strangely, `getComputedStyle(barline).strokeWidth` yields an
+            // empty string, though it will not do this in the browser.
+            // So we rely on "stroke-width" being set as an attribute here.
+            barlineThicknesses.add(parseFloat(barline.getAttribute("stroke-width")) / unit);
+          });
+          assert.strictEqual(barlineThicknesses.size, 2, "two different barline widths");
+          const [thin, thick] = [...barlineThicknesses].sort();
+          assert.strictEqual(thin, .15 * 2, "thin barline thickness");
+          assert.strictEqual(thick, .5 * 2, "thick barline thickness");
+
+          const staffLineWidth = parseFloat(svg.querySelector(".staff > path").getAttribute("stroke-width")) / unit; 
+          assert.closeTo(staffLineWidth, .075 * 2, .01, "staff line thickness");
+
+          const stemWidth = svg.querySelector(".stem > rect").width.baseVal.value / unit; 
+          assert.closeTo(stemWidth, .1 * 2, .01, "stem thickness");
+
+          svg.querySelectorAll(".syl rect").forEach(rect => {
+            const sylId = rect.closest(".syl").getAttribute("data-id");
+            assert.closeTo(rect.height.baseVal.value / unit, 0.125 * 2, .01, "lyric line thickness for syl " + sylId);
+          });
+
+          const hpPoints = svg.querySelector(".hairpin > polygon").points;
+          assert.closeTo(Math.abs(hpPoints[2].y - hpPoints[1].y) / unit, .1 * 2, .01, "hairpin width");    
+
+          const bracketWidths = [];
+          svg.querySelectorAll(".grpSym > rect:first-of-type").forEach(
+            rect => bracketWidths.push(rect.width.baseVal.value / unit)
+          );
+          assert.closeTo(bracketWidths[0], .5 * 2, .01,  "bracket width");
+          assert.closeTo(bracketWidths[1], .2 * 2, .01,  "sub-bracket width");
+
+          const tupletBracketTipWidth = svg.querySelector(".tupletBracket > rect").width.baseVal.value / unit;
+          const tupPoints = svg.querySelector(".tupletBracket > polygon").points;
+          assert.closeTo(tupletBracketTipWidth, .18 * 2, .01, "tuplet bracket line width at tips"); 
+          assert.closeTo(Math.abs(tupPoints[2].y - tupPoints[1].y) / unit, .18 * 2, .01, "tuplet bracket line width in the center");
+
+          assert.closeTo(slurTieWidth(".slur > path"), .3 * 2, .05, "slur midpoint thickness");
+          assert.closeTo(slurTieWidth(".tie > path"), .3 * 2, .05, "tie midpoint thickness");
+          ]]>
+        </annot>
+      </notesStmt>
+    </fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef>
+            <staffGrp symbol="bracket">
+              <staffDef n="1" lines="5" clef.shape="G" clef.line="2"/>
+              <staffGrp symbol="bracketsq">
+                <staffDef n="2" lines="5" clef.shape="G" clef.line="2"/>
+                <staffDef n="3" lines="5" clef.shape="G" clef.line="2"/>
+              </staffGrp>
+            </staffGrp>
+          </scoreDef>
+          <section>
+            <pb/>
+            <measure n="0" right="rptboth">
+              <staff n="1">
+                <layer n="1">
+                  <note pname="g" oct="4" dur="4">
+                    <verse>
+                      <syl wordpos="i" con="d" xml:id="m0-s1-syl1">foo</syl>
+                    </verse>
+                  </note>
+                  <note pname="g" oct="4" dur="4">
+                    <verse>
+                      <syl wordpos="t" xml:id="m0-s1-syl2">bar</syl>
+                    </verse>
+                  </note>
+                  <note pname="g" oct="4" dur="4" xml:id="m0-s1-note4">
+                    <verse>
+                      <syl con="u" xml:id="m0-s1-syl3">baz</syl>
+                    </verse>
+                  </note>
+                  <note pname="f" oct="4" dur="8"/>
+                  <note pname="g" oct="4" dur="8" xml:id="m0-s1-note6"/>
+                </layer>
+              </staff>
+              <staff n="2">
+                <layer>
+                  <tuplet num="3" numbase="2" bracket.visible="true">
+                    <note pname="g" oct="4" dur="4"/>
+                    <note pname="g" oct="4" dur="4"/>
+                    <note pname="g" oct="4" dur="4"/>
+                  </tuplet>
+                </layer>
+              </staff>
+              <staff n="3">
+                <layer>
+                  <mRest/>
+                </layer>
+              </staff>
+              <slur startid="#m0-s1-note4" endid="#m0-s1-note6" curvedir="above"/>
+              <hairpin form="cres" tstamp="1" tstamp2="4" staff="1"/>
+            </measure>
+            <measure n="1" right="rptend">
+              <staff n="1">
+                <layer n="1">
+                  <note pname="g" oct="4" dur="4" xml:id="m1-s1-note1"/>
+                  <note pname="g" oct="4" dur="16" xml:id="m1-s1-note2"/>
+                </layer>
+              </staff>
+              <tie startid="#m1-s1-note1" endid="#m1-s1-note2"/>
+            </measure>
+            <measure n="2">
+              <staff n="1">
+                <layer n="1">
+                  <mRest/>
+                </layer>
+              </staff>
+            </measure>
+            <measure n="3" right="end">
+              <staff n="1">
+                <layer n="1">
+                  <mRest/>
+                </layer>
+              </staff>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>
