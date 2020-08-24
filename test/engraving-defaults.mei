@@ -8,7 +8,23 @@
       <notesStmt>
         <annot type="verovio-options">
           {
-            "engravingDefaults": "test/engraving-defaults-test.json"
+            "engravingDefaults": {
+              "fontName": "foo",
+              "fontVersion": 0,
+              "engravingDefaults": {
+                "thinBarlineThickness": 0.15,
+                "lyricLineThickness": 0.125,
+                "slurMidpointThickness": 0.3,
+                "staffLineThickness": 0.075,
+                "stemThickness": 0.1,
+                "tieMidpointThickness": 0.25,
+                "hairpinThickness": 0.1,
+                "thickBarlineThickness": 0.5,
+                "tupletBracketThickness": 0.18,
+                "subBracketThickness": 0.2,
+                "bracketThickness": 0.5
+              }
+            }
           }
         </annot>
         <annot type="test" label="respect engraving defaults">
@@ -23,6 +39,12 @@
           const unit = (lines[1].getPointAtLength(0).y - lines[0].getPointAtLength(0).y) / 2;
           const measures = svg.querySelectorAll(".measure");
 
+          const opt = testcase.verovioOptions.engravingDefaults.engravingDefaults;
+          for (const [key, value] of Object.entries(opt)) {
+            // SMuFL units are in spaces, but MEI uses half a space
+            opt[key] = value * 2;
+          }
+
 
           function slurTieWidth(pathSelector) {
             const path = svg.querySelector(pathSelector);
@@ -36,7 +58,7 @@
             return (Math.abs(y2 - y1) + strokeWidth) / unit;
           }
 
-          const barlineThicknesses = new Set([]);
+          const barlineThicknesses = new Set();
           svg.querySelectorAll(".barLineAttr > path").forEach(barline => {
             // Strangely, `getComputedStyle(barline).strokeWidth` yields an
             // empty string, though it will not do this in the browser.
@@ -45,37 +67,39 @@
           });
           assert.strictEqual(barlineThicknesses.size, 2, "two different barline widths");
           const [thin, thick] = [...barlineThicknesses].sort();
-          assert.strictEqual(thin, .15 * 2, "thin barline thickness");
-          assert.strictEqual(thick, .5 * 2, "thick barline thickness");
+          assert.strictEqual(thin, opt.thinBarlineThickness , "thin barline thickness");
+          assert.strictEqual(thick, opt.thickBarlineThickness, "thick barline thickness");
 
           const staffLineWidth = parseFloat(svg.querySelector(".staff > path").getAttribute("stroke-width")) / unit; 
-          assert.closeTo(staffLineWidth, .075 * 2, .01, "staff line thickness");
+          assert.closeTo(staffLineWidth, opt.staffLineThickness, .01, "staff line thickness");
 
           const stemWidth = svg.querySelector(".stem > rect").width.baseVal.value / unit; 
-          assert.closeTo(stemWidth, .1 * 2, .01, "stem thickness");
+          assert.closeTo(stemWidth, opt.stemThickness, .1, "stem thickness");
 
           svg.querySelectorAll(".syl rect").forEach(rect => {
             const sylId = rect.closest(".syl").getAttribute("data-id");
-            assert.closeTo(rect.height.baseVal.value / unit, 0.125 * 2, .01, "lyric line thickness for syl " + sylId);
+            const lineWidth = rect.height.baseVal.value / unit;
+            assert.closeTo(lineWidth, opt.lyricLineThickness, .01, "lyric line thickness for syl " + sylId);
           });
 
           const hpPoints = svg.querySelector(".hairpin > polygon").points;
-          assert.closeTo(Math.abs(hpPoints[2].y - hpPoints[1].y) / unit, .1 * 2, .01, "hairpin width");    
+          const hairpinLineWidth = Math.abs(hpPoints[2].y - hpPoints[1].y) / unit;
+          assert.closeTo(hairpinLineWidth, opt.hairpinThickness, .01, "hairpin width");
 
           const bracketWidths = [];
           svg.querySelectorAll(".grpSym > rect:first-of-type").forEach(
             rect => bracketWidths.push(rect.width.baseVal.value / unit)
           );
-          assert.closeTo(bracketWidths[0], .5 * 2, .01,  "bracket width");
-          assert.closeTo(bracketWidths[1], .2 * 2, .01,  "sub-bracket width");
+          assert.closeTo(bracketWidths[0], opt.bracketThickness, .01,  "bracket width");
+          assert.closeTo(bracketWidths[1], opt.subBracketThickness, .01,  "sub-bracket width");
 
           const tupletBracketTipWidth = svg.querySelector(".tupletBracket > rect").width.baseVal.value / unit;
           const tupPoints = svg.querySelector(".tupletBracket > polygon").points;
-          assert.closeTo(tupletBracketTipWidth, .18 * 2, .01, "tuplet bracket line width at tips"); 
-          assert.closeTo(Math.abs(tupPoints[2].y - tupPoints[1].y) / unit, .18 * 2, .01, "tuplet bracket line width in the center");
+          assert.closeTo(tupletBracketTipWidth, opt.tupletBracketThickness, .01, "tuplet bracket line width at tips");
+          assert.closeTo(Math.abs(tupPoints[2].y - tupPoints[1].y) / unit, opt.tupletBracketThickness, .01, "tuplet bracket line width in the center");
 
-          assert.closeTo(slurTieWidth(".slur > path"), .3 * 2, .05, "slur midpoint thickness");
-          assert.closeTo(slurTieWidth(".tie > path"), .3 * 2, .05, "tie midpoint thickness");
+          assert.closeTo(slurTieWidth(".slur > path"), opt.slurMidpointThickness, .05, "slur midpoint thickness");
+          assert.closeTo(slurTieWidth(".tie > path"), opt.tieMidpointThickness, .05, "tie midpoint thickness");
           ]]>
         </annot>
       </notesStmt>
